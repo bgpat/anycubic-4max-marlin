@@ -4,5 +4,8 @@ all: Marlin/Marlin/Configuration.h Marlin/Marlin/Configuration_adv.h Marlin/Marl
 clean:
 	touch *.h
 
+Version.h: Version.h.template
+	sed -e "s/\$${GIT_COMMIT_HASH}/$$(git rev-parse --short HEAD)/" $< > $@
+
 Marlin/Marlin/%.h: %.h
 	cp $< $@
