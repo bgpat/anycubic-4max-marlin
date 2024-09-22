@@ -1,11 +1,25 @@
-.PHONY: all clean
-all: Marlin/Marlin/Configuration.h Marlin/Marlin/Configuration_adv.h Marlin/Marlin/Version.h
+.PHONY: upload compile clean
+upload: compile
+	arduino-cli upload -b arduino:avr:mega build/Marlin -p /dev/ttyUSB*
+
+compile: build/Marlin build/Marlin/Version.h build/Marlin/Configuration.h build/Marlin/Configuration_adv.h
+	arduino-cli compile -b arduino:avr:mega --build-cache-path build/cache $<
 
 clean:
-	touch *.h
+	rm -rf build
 
-Version.h: Version.h.template
+build:
+	mkdir -p $@
+
+build/Marlin: Marlin/Marlin build
+	cp -ap $< $@
+
+#build/Marlin/src/inc/Version.h: Version.h.template build/Marlin
+build/Marlin/Version.h: Version.h.template build/Marlin
 	sed -e "s/\$${GIT_COMMIT_HASH}/$$(git rev-parse --short HEAD)/" $< > $@
 
-Marlin/Marlin/%.h: %.h
+build/Marlin/Configuration.h: Configuration.h build/Marlin
+	cp $< $@
+
+build/Marlin/Configuration_adv.h: Configuration_adv.h build/Marlin
 	cp $< $@
